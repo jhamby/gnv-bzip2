@@ -1,0 +1,45 @@
+/* File:gnv_bzip2.c_first */
+
+/* Some of this from Steven Schweda port */
+
+#if defined( __VAX) || (__CRTL_VER < 80300000)
+
+#include <errno.h>
+#include <stat.h>
+#include <stdlib.h>
+#include <unixio.h>
+
+#include <nam.h>
+
+#ifdef NAML$C_MAXRSS /* ODS-5 support present */
+#  define NAM_MAXRSS NAML$C_MAXRSS
+#else
+#  define NAM_MAXRSS NAM$C_MAXRSS
+#endif
+
+#define lstat(file, buf) stat(file, buf)
+
+static int vms_fchmod(int fd, mode_t mode) {
+    char * filename;
+    char * ret_stat;
+    int status;
+    int save_errno;
+
+    status = -1;
+    filename = malloc(NAM_MAXRSS + 1);
+    if (filename == NULL) {
+        return -1;
+    }
+    ret_stat = getname(fd, filename);
+    if (ret_stat != NULL) {
+        status = chmod(filename, mode);
+    }
+    save_errno = errno;
+    free(filename);
+    errno = save_errno;
+    return status;
+}
+
+#define fchmod vms_fchmod
+
+#endif

@@ -1,0 +1,6 @@
+! If editing this file, also edit libbz2_symbols.opt and
+! libbz2_xfer.mar_exact to keep the VAX symbol vectors up to date.
+!
+gsmatch=lequal,1,000600
+cluster=transfer_vector,,,libbz2_xfer
+collect=libbz2_global,libbz2_xfervectors

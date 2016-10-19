@@ -1,0 +1,84 @@
+! File LIBZ2SHR_SYMBOLS.OPT
+!
+! This file must be manually maintained to allow upward compatibility
+! The symbol_vectors are set up so that applications can be compiled
+! with either case sensitive symbol names or the default of uppercase.
+! This is because many of the Open Source applications that would call
+! the LIBZ2SHR library need to be built with case sensitive names.
+!
+! The list of routines here are the same ones that have the "BZ_EXPORT"
+! tag on them in bzlib.h.
+!
+! Automatic generation is currently not practical because the order of
+! the entries are important for upward compatibility.
+!
+! The GSMATCH is manually set to the major version of 1, with the minor
+! version being the next two sections multiplied by a power of 10 to
+! become the minor version.
+! So LIBBZ2 1.0.6 becomes 1,000600.
+! And a future LIBBZ2 of 1.1.6 would be 1,100600.
+!
+! If editing this file, also edit libbz2_32_xfer.opt and
+! libbz2_xfer.mar_exact to keep the VAX symbol vectors up to date.
+!
+! This leaves some spare digits for minor patches.
+!
+! New symbol_vectors must be added to the end of this list, and added
+! in pairs.
+!
+! Routines can not be removed, the functionality must be maintained.
+! If a new routine is supplied where the arguments are incompatible with
+! the older version, both versions are needed to be maintained.
+! The old version can be given a different name, but must be in the same
+! symbol_vector positions in this file.
+!
+! Changing the number of parameters for an existing routine does not require
+! maintaining multiple versions as long as the routine can be called with
+! the old number of parameters.
+!
+GSMATCH=LEQUAL,1,000600
+CASE_SENSITIVE=YES
+ symbol_vector=(BZ2_bzCompressInit=PROCEDURE)
+ symbol_vector=(BZ2_BZCOMPRESSINIT/BZ2_bzCompressInit=PROCEDURE)
+ symbol_vector=(BZ2_bzCompress=PROCEDURE)
+ symbol_vector=(BZ2_BZCOMPRESS/BZ2_bzCompress=PROCEDURE)
+ symbol_vector=(BZ2_bzCompressEnd=PROCEDURE)
+ symbol_vector=(BZ2_BZCOMPRESSEND/BZ2_bzCompressEnd=PROCEDURE)
+ symbol_vector=(BZ2_bzDecompressInit=PROCEDURE)
+ symbol_vector=(BZ2_BZDECOMPRESSINIT/BZ2_bzDecompressInit=PROCEDURE)
+ symbol_vector=(BZ2_bzDecompress=PROCEDURE)
+ symbol_vector=(BZ2_BZDECOMPRESS/BZ2_bzDecompress=PROCEDURE)
+ symbol_vector=(BZ2_bzDecompressEnd=PROCEDURE)
+ symbol_vector=(BZ2_BZDECOMPRESSEND/BZ2_bzDecompressEnd=PROCEDURE)
+ symbol_vector=(BZ2_bzReadOpen=PROCEDURE)
+ symbol_vector=(BZ2_BZREADOPEN/BZ2_bzReadOpen=PROCEDURE)
+ symbol_vector=(BZ2_bzReadClose=PROCEDURE)
+ symbol_vector=(BZ2_BZREADCLOSE/BZ2_bzReadClose=PROCEDURE)
+ symbol_vector=(BZ2_bzReadGetUnused=PROCEDURE)
+ symbol_vector=(BZ2_BZREADGETUNUSED/BZ2_bzReadGetUnused=PROCEDURE)
+ symbol_vector=(BZ2_bzRead=PROCEDURE)
+ symbol_vector=(BZ2_BZREAD/BZ2_bzRead=PROCEDURE)
+ symbol_vector=(BZ2_bzWriteOpen=PROCEDURE)
+ symbol_vector=(BZ2_BZWRITEOPEN/BZ2_bzWriteOpen=PROCEDURE)
+ symbol_vector=(BZ2_bzWrite=PROCEDURE)
+ symbol_vector=(BZ2_BZWRITE/BZ2_bzWrite=PROCEDURE)
+ symbol_vector=(BZ2_bzWriteClose=PROCEDURE)
+ symbol_vector=(BZ2_BZWRITECLOSE/BZ2_bzWriteClose=PROCEDURE)
+ symbol_vector=(BZ2_bzWriteClose64=PROCEDURE)
+ symbol_vector=(BZ2_BZWRITECLOSE64/BZ2_bzWriteClose64=PROCEDURE)
+ symbol_vector=(BZ2_bzBuffToBuffCompress=PROCEDURE)
+ symbol_vector=(BZ2_BZBUFFTOBUFFCOMPRESS/BZ2_bzBuffToBuffCompress=PROCEDURE)
+ symbol_vector=(BZ2_bzBuffToBuffDecompress=PROCEDURE)
+ symbol_vector=(BZ2_BZBUFFTOBUFFDECOMPRESS/BZ2_bzBuffToBuffDecompress=PROCEDURE)
+ symbol_vector=(BZ2_bzlibVersion=PROCEDURE)
+ symbol_vector=(BZ2_BZLIBVERSION/BZ2_bzlibVersion=PROCEDURE)
+ symbol_vector=(BZ2_bzopen=PROCEDURE)
+ symbol_vector=(BZ2_BZOPEN/BZ2_bzopen=PROCEDURE)
+ symbol_vector=(BZ2_bzdopen=PROCEDURE)
+ symbol_vector=(BZ2_BZDOPEN/BZ2_bzdopen=PROCEDURE)
+ symbol_vector=(BZ2_bzflush=PROCEDURE)
+ symbol_vector=(BZ2_BZFLUSH/BZ2_bzflush=PROCEDURE)
+ symbol_vector=(BZ2_bzclose=PROCEDURE)
+ symbol_vector=(BZ2_BZCLOSE/BZ2_bzclose=PROCEDURE)
+ symbol_vector=(BZ2_bzerror=PROCEDURE)
+ symbol_vector=(BZ2_BZERROR/BZ2_bzerror=PROCEDURE)

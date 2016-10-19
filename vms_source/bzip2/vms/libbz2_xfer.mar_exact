@@ -1,0 +1,154 @@
+; File: LIBBZ2_XFER.MAR_EXACT
+;
+; VAX transfer vectors
+;
+; If editing this file, also edit libbz2_symbols.opt and
+; libbz2_32_xfer.opt to keep the VAX symbol vectors up to date.
+;
+;
+; This needs to be compiled with a specialized patch on Macro32 to make it
+; preserve the case of symbols instead of converting it to uppercase.
+;
+; This patched Macro32 requires all directives to be in upper case.
+;
+; There are three sets of symbols for transfer vectors here.
+;
+; The first for upper case which matches the tradition method of generating
+; VAX transfer vectors.
+;
+; The second is the exact case for compatibilty with open source C programs
+; that expect exact case symbols in images.  These are separated because a
+; previous kit had only upper case symbols.
+;
+; The third is the routine stub that is used to resolve part of the upper
+; case transfer vectors, with exact case entry symbols.
+;
+; When you add routines, you need to add them after the second set of transfer
+; vectors for both upper and exact case, and then additional entry points
+; in upper case added to stub routines.
+;
+; 02-Oct-2106   J. Malmberg
+;
+;*************************************************************************
+
+	.TITLE libbz2_xfer - Transfer vector for libbz2
+	.IDENT /V1.0.6/
+
+	.DISABLE GLOBAL
+
+;
+; Macro to generate a transfer vector entry
+;
+	.MACRO	PROCEDURE	NAME
+	.EXTRN		'NAME
+	.ALIGN	QUAD
+	.TRANSFER	'NAME
+	.MASK		'NAME
+	JMP		'NAME+2
+	.ENDM
+
+	.MACRO	PROCEDUREU	NAME	NAMEU
+	.EXTRN	'NAME
+	.ALIGN	QUAD
+	.TRANSFER	'NAMEU
+	.MASK		'NAME
+	JMP		'NAME+2
+
+	.ENDM
+;
+;
+; Macro to reserve a spare entry.
+;
+	.MACRO	SPARE
+	.ALIGN	QUAD
+	.QUAD	0
+	.ENDM
+
+
+	.PSECT LIBBZ2_XFERVECTORS  -
+		PIC,USR,CON,REL,GBL,SHR,EXE,RD,NOWRT,QUAD
+
+	SPARE	; never delete this spare
+;
+;	Upper case transfer vector.
+
+	PROCEDUREU	BZ2_bzCompressInit	BZ2_BZCOMPRESSINIT
+	PROCEDUREU	BZ2_bzCompress		BZ2_BZCOMPRESS
+	PROCEDUREU	BZ2_bzCompressEnd	BZ2_BZCOMPRESSEND
+	PROCEDUREU	BZ2_bzDecompressInit	BZ2_BZDECOMPRESSINIT
+	PROCEDUREU	BZ2_bzDecompress	BZ2_BZDECOMPRESS
+	PROCEDUREU	BZ2_bzDecompressEnd	BZ2_BZDECOMPRESSEND
+	PROCEDUREU	BZ2_bzReadOpen		BZ2_BZREADOPEN
+	PROCEDUREU	BZ2_bzReadClose		BZ2_BZREADCLOSE
+	PROCEDUREU	BZ2_bzReadGetUnused	BZ2_BZREADGETUNUSED
+	PROCEDUREU	BZ2_bzRead		BZ2_BZREAD
+	PROCEDUREU	BZ2_bzWriteOpen		BZ2_BZWRITEOPEN
+	PROCEDUREU	BZ2_bzWrite		BZ2_BZWRITE
+	PROCEDUREU	BZ2_bzWriteClose	BZ2_BZWRITECLOSE
+	PROCEDUREU	BZ2_bzWriteClose64	BZ2_BZWRITECLOSE64
+	PROCEDUREU	BZ2_bzBuffToBuffCompress BZ2_BZBUFFTOBUFFCOMPRESS
+	PROCEDUREU	BZ2_bzBuffToBuffDecompress BZ2_BZBUFFTOBUFFDECOMPRESS
+	PROCEDUREU	BZ2_bzlibVersion	BZ2_BZLIBVERSION
+	PROCEDUREU	BZ2_bzopen		BZ2_BZOPEN
+	PROCEDUREU	BZ2_bzdopen		BZ2_BZDOPEN
+	PROCEDUREU	BZ2_bzflush		BZ2_BZFLUSH
+	PROCEDUREU	BZ2_bzclose		BZ2_BZCLOSE
+	PROCEDUREU	BZ2_bzerror		BZ2_BZERROR
+
+;	Repeat for exact case
+;
+;	PROCEDURE	ExactCase
+
+	PROCEDURE	BZ2_bzCompressInit
+	PROCEDURE	BZ2_bzCompress
+	PROCEDURE	BZ2_bzCompressEnd
+	PROCEDURE	BZ2_bzDecompressInit
+	PROCEDURE	BZ2_bzDecompress
+	PROCEDURE	BZ2_bzDecompressEnd
+	PROCEDURE	BZ2_bzReadOpen
+	PROCEDURE	BZ2_bzReadClose
+	PROCEDURE	BZ2_bzReadGetUnused
+	PROCEDURE	BZ2_bzRead
+	PROCEDURE	BZ2_bzWriteOpen
+	PROCEDURE	BZ2_bzWrite
+	PROCEDURE	BZ2_bzWriteClose
+	PROCEDURE	BZ2_bzWriteClose64
+	PROCEDURE	BZ2_bzBuffToBuffCompress
+	PROCEDURE	BZ2_bzBuffToBuffDecompress
+	PROCEDURE	BZ2_bzlibVersion
+	PROCEDURE	BZ2_bzopen
+	PROCEDURE	BZ2_bzdopen
+	PROCEDURE	BZ2_bzflush
+	PROCEDURE	BZ2_bzclose
+	PROCEDURE	BZ2_bzerror
+
+; Stub routines  - Place after last transfer vector.
+
+	.ENTRY	BZ2_BZCOMPRESSINIT, ^M<>
+	.ENTRY	BZ2_BZCOMPRESS, ^M<>
+	.ENTRY	BZ2_BZCOMPRESSEND, ^M<>
+	.ENTRY	BZ2_BZDECOMPRESSINIT, ^M<>
+	.ENTRY	BZ2_BZDECOMPRESS, ^M<>
+	.ENTRY	BZ2_BZDECOMPRESSEND, ^M<>
+	.ENTRY	BZ2_BZREADOPEN, ^M<>
+	.ENTRY	BZ2_BZREADCLOSE, ^M<>
+	.ENTRY	BZ2_BZREADGETUNUSED, ^M<>
+	.ENTRY	BZ2_BZREAD, ^M<>
+	.ENTRY	BZ2_BZWRITEOPEN, ^M<>
+	.ENTRY	BZ2_BZWRITE, ^M<>
+	.ENTRY	BZ2_BZWRITECLOSE, ^M<>
+	.ENTRY	BZ2_BZWRITECLOSE64, ^M<>
+	.ENTRY	BZ2_BZBUFFTOBUFFCOMPRESS, ^M<>
+	.ENTRY	BZ2_BZBUFFTOBUFFDECOMPRESS, ^M<>
+	.ENTRY	BZ2_BZLIBVERSION, ^M<>
+	.ENTRY	BZ2_BZOPEN, ^M<>
+	.ENTRY	BZ2_BZDOPEN, ^M<>
+	.ENTRY	BZ2_BZFLUSH, ^M<>
+	.ENTRY	BZ2_BZCLOSE, ^M<>
+	.ENTRY	BZ2_BZERROR, ^M<>
+	MOVL #1, R0
+	RET
+
+	.END
+
+
