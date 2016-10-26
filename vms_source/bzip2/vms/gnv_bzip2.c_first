@@ -1,5 +1,51 @@
 /* File:gnv_bzip2.c_first */
 
+#include "vms_main_wrapper.c"
+
+#include <stdlib.h>
+#include <errno.h>
+static char * vms_getenv(const char * env_name) {
+
+    char * name;
+    char * shell;
+    char * name_opts;
+    char env_name_opts[256];
+
+    if (env_name == NULL) {
+        errno = EINVAL;
+        return NULL;
+    }
+    shell = getenv("SHELL");
+    name = getenv(env_name);
+    strncpy(env_name_opts, env_name, 256 - 5);
+    env_name_opts[256 - 5] = 0;
+    strcat(env_name_opts, "_opts");
+    name_opts = getenv(env_name_opts);
+
+    if (shell == NULL) {
+    /* DCL behavior, name_opts takes precedence */
+        if (name_opts != NULL) {
+            return name_opts;
+        }
+        /* Filter out foreign commands */
+        if ((name != NULL) && (name[0] != '$')) {
+            return name;
+        }
+    } else {
+        /* GNV behavior, name takes precedence */
+        if (name != NULL) {
+            return name;
+        }
+        if (name_opts != NULL) {
+            return name_opts;
+        }
+    }
+    return NULL;
+}
+
+#define getenv vms_getenv
+
+
 /* Some of this from Steven Schweda port */
 
 #if defined( __VAX) || (__CRTL_VER < 80300000)

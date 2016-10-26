@@ -37,16 +37,20 @@ cinc = $(cinc2)/include=(sys$disk:[],sys$disk:[.vms])
 .ifdef __VAX__
 cprefix = /pref=all
 cdefs = /def=(_POSIX_EXIT=1)
+cdefs_bzr = /def=(_POSIX_EXIT=1)
 cfloat =
 cptr =
 .else
 cprefix = /prefix=(all,exce=(strtoimax,strtoumax))
 cdefs = /define=(_USE_STD_STAT=1,_POSIX_EXIT=1,_LARGEFILE)
+cdefs_bzr = /define=(_USE_STD_STAT=1,_POSIX_EXIT=1,_LARGEFILE,__GNUC__)
 cfloat = /float=ieee/ieee_mode=denorm_results
 cptr = /pointer_size=long=argv
 .endif
 cflags32 = $(cnames)/debu$(clist)$(cprefix)$(cwarn)$(cinc)$(cdefs)$(cfloat)
 cflags = $(cflags32)$(cptr)
+cflags_bzr = \
+  $(cnames)/debu$(clist)$(cprefix)$(cwarn)$(cinc)$(cdefs_bzr)$(cfloat)
 
 # Set up the rules for use.
 #===========================================
@@ -120,13 +124,13 @@ all : $(LIBBZ2_SOS) $(LIBBZ2_A) extra_man \
 
 sys$disk:[]gnv$bzip2.exe : sys$disk:[]$(LIBBZ2).olb sys$disk:[]bzip2.obj \
           sys$disk:[]vms_crtl_init.obj
-	$(LINK)$(LFLAGS)/EXEC=$(MMS$TARGET) sys$disk:[]bzip2.obj, \
+	$(LINK)$(LFLAGS)/EXEC=sys$disk:[]gnv$bzip2.exe sys$disk:[]bzip2.obj, \
           sys$disk:[]vms_crtl_init.obj, $(LIBBZ2).olb/lib
 
 sys$disk:[]gnv$bzip2recover.exe : sys$disk:[]bzip2recover.obj \
           sys$disk:[]vms_crtl_init.obj
-	$(LINK)$(LFLAGS)/EXEC=$(MMS$TARGET) sys$disk:[]bzip2recover.obj, \
-          vms_crtl_init.obj
+	$(LINK)$(LFLAGS)/EXEC=sys$disk:[]gnv$bzip2recover.exe \
+          sys$disk:[]bzip2recover.obj, vms_crtl_init.obj
 
 sys$disk:[]$(LIBBZ2).olb : $(LIBBZ2)($(OBJS))
 	@ write sys$output "$(LIBBZ2) is up to date"
@@ -175,106 +179,7 @@ sys$disk:[]libbz2_xfer.obj : sys$disk:[.vms]libbz2_xfer.mar_exact \
 check : test
 
 test : sys$disk:[]gnv$bzip2.exe
-        @ $ @sys$disk:[.vms]junit_support start test_bzip2
-.ifndef __VAX__
-	@ $ type words1.
-        define/user sys$input sample1.ref
-        define/user sys$output sample1.rb2
-	mcr sys$disk:[]gnv$bzip2 -1  ! < sample1.ref > sample1.rb2
-        define/user sys$input sample2.ref
-        define/user sys$output sample2.rb2
-	mcr sys$disk:[]gnv$bzip2 -2  ! < sample2.ref > sample2.rb2
-        define/user sys$input sample3.ref
-        define/user sys$output sample3.rb2
-	mcr sys$disk:[]gnv$bzip2 -3  ! < sample3.ref > sample3.rb2
-        define/user sys$input sample1.bz2
-        define/user sys$output sample1.tst
-	mcr sys$disk:[]gnv$bzip2 -d  ! < sample1.bz2 > sample1.tst
-        define/user sys$input sample2.bz2
-        define/user sys$output sample2.tst
-	mcr sys$disk:[]gnv$bzip2 -d  ! < sample2.bz2 > sample2.tst
-        define/user sys$input sample3.bz2
-        define/user sys$output sample3.tst
-	mcr sys$disk:[]gnv$bzip2 -ds ! < sample3.bz2 > sample3.tst
-	checksum sample1.bz2
-	oldsum=checksum$checksum
-        checksum sample1.rb2
-        @ $ if oldsum .nes. checksum$checksum then \
-           @sys$disk:[.vms]junit_support fail test_bzip2 bzip_1 compress \
-            "sample1.rb2 compare failed"
-        @ $ if oldsum .eqs. checksum$checksum then \
-           @sys$disk:[.vms]junit_support pass test_bzip2 bzip_1 compress
-	#cmp sample1.bz2 sample1.rb2
-	checksum sample2.bz2
-	oldsum=checksum$checksum
-        checksum sample2.rb2
-        @ $ if oldsum .nes. checksum$checksum then \
-           @sys$disk:[.vms]junit_support fail test_bzip2 bzip_2 compress \
-            "sample2.rb2 compare failed"
-        @ $ if oldsum .eqs. checksum$checksum then \
-           @sys$disk:[.vms]junit_support pass test_bzip2 bzip_2 compress
-	#cmp sample2.bz2 sample2.rb2
-	checksum sample3.bz2
-	oldsum=checksum$checksum
-        checksum sample3.rb2
-        @ $ if oldsum .nes. checksum$checksum then \
-           @sys$disk:[.vms]junit_support fail test_bzip2 bzip_3 compress \
-            "sample3.rb2 compare failed"
-        @ $ if oldsum .eqs. checksum$checksum then \
-           @sys$disk:[.vms]junit_support pass test_bzip2 bzip_3 compress
-	#cmp sample3.bz2 sample3.rb2
-	checksum sample1.ref
-	oldsum=checksum$checksum
-        checksum sample1.tst
-        @ $ if oldsum .nes. checksum$checksum then \
-           @sys$disk:[.vms]junit_support fail test_bzip2 bunzip_1 decompress \
-            "sample1.tst compare failed"
-        @ $ if oldsum .eqs. checksum$checksum then \
-           @sys$disk:[.vms]junit_support pass test_bzip2 bunzip_1 decompress
-	#cmp sample1.tst sample1.ref
-	checksum sample2.ref
-	oldsum=checksum$checksum
-        checksum sample2.tst
-        @ $ if oldsum .nes. checksum$checksum then \
-           @sys$disk:[.vms]junit_support fail test_bzip2 bunzip_2 decompress \
-            "sample2.tst compare failed"
-        @ $ if oldsum .eqs. checksum$checksum then \
-           @sys$disk:[.vms]junit_support pass test_bzip2 bunzip_2 decompress
-	#cmp sample2.tst sample2.ref
-	checksum sample3.ref
-	oldsum=checksum$checksum
-	checksum sample3.tst
-        @ $ if oldsum .nes. checksum$checksum then \
-           @sys$disk:[.vms]junit_support fail test_bzip2 bunzip_3 decompress \
-            "sample3.tst compare failed"
-        @ $ if oldsum .eqs. checksum$checksum then \
-           @sys$disk:[.vms]junit_support pass test_bzip2 bunzip_3 decompress
-	#cmp sample3.tst sample3.ref
-	# need test for bzip/bzip_* environment variables.
-	# Need test for 32/64 bit shared image link.
-	# cc /names=(upper,short)/define=(_POSIX_EXIT)-
-	# /opt=(inline)/pref=all/include=[] [.test]example.c -
-	# /obj=example_upper.obj
-	@ $ type words3.
-.else
-        @ $ write sys$output "Tests skipped on VAX for now"
-        @ $!  The reference files can not be read by the
-        @ $! VMS checksum utility as-is.
-        @ $ @sys$disk:[.vms]junit_support skip test_bzip2 bzip_1 compress \
-            "currently skipped on VAX"
-        @ $ @sys$disk:[.vms]junit_support skip test_bzip2 bzip_2 compress \
-            "currently skipped on VAX"
-        @ $ @sys$disk:[.vms]junit_support skip test_bzip2 bzip_3 compress \
-            "currently skipped on VAX"
-        @ $ @sys$disk:[.vms]junit_support skip test_bzip2 bunzip_1 decompress \
-            "currently skipped on VAX"
-        @ $ @sys$disk:[.vms]junit_support skip test_bzip2 bunzip_2 decompress \
-            "currently skipped on VAX"
-        @ $ @sys$disk:[.vms]junit_support skip test_bzip2 bunzip_3 decompress \
-            "currently skipped on VAX"
-.endif
-        @ $ @sys$disk:[.vms]junit_support finish test_bzip2 6 test_bzip2
-
+        @ $ @sys$disk:[.vms]bzip2_tests.com
 
 extra_man : sys$disk:[]bzcmp.1 sys$disk:[]bzegrep.1 sys$disk:[]bzfgrep.1 \
             sys$disk:[]bzless.1
@@ -354,6 +259,7 @@ clean :
         if f$search("gnv$libbz2*.exe") .nes. "" then delete gnv$libbz2*.exe;*
         if f$search("sample%.rb2") .nes. "" then delete sample%.rb2;*
         if f$search("sample%.tst") .nes. "" then delete sample%.tst;*
+        if f$search("bzip2%.tmp") .nes. "" then delete bzip2%.tmp;*
         if f$search("bzcmp.1") .nes. "" then delete bzcmp.1;*
         if f$search("bzegrep.1") .nes. "" then delete bzegrep.1;*
         if f$search("bzfgrep.1") .nes. "" then delete bzfgrep.1;*
@@ -414,10 +320,14 @@ sys$disk:[]bzlib.obj : bzlib.c
 sys$disk:[]bzlib.o32 : bzlib.c
 
 .ifndef __VAX__
-sys$disk:[]bzip2.obj : bzip2.c
+sys$disk:[]bzip2.obj : bzip2.c, sys$disk:[.vms]gnv_bzip2.c_first \
+          sys$disk:[.vms]vms_main_wrapper.c
+        $(CC)$(CFLAGS)/OBJ=$(MMS$TARGET) $(MMS$SOURCE) \
+            /first_include=sys$disk:[.vms]gnv_bzip2.c_first
 
 .else
-sys$disk:[]bzip2.c_vax : bzip2.c sys$disk:[.vms]gnv_bzip2.c_first
+sys$disk:[]bzip2.c_vax : bzip2.c sys$disk:[.vms]gnv_bzip2.c_first \
+          sys$disk:[.vms]vms_main_wrapper.c
      @ $ type/noheader sys$disk:[.vms]gnv_bzip2.c_first, \
          sys$disk:[]bzip2.c /output=$(MMS$TARGET)
 
@@ -425,8 +335,25 @@ sys$disk:[]bzip2.obj : sys$disk:[]bzip2.c_vax
 
 .endif
 
-sys$disk:[]bzip2recover.obj : bzip2recover.c
+.ifndef __VAX__
+sys$disk:[]bzip2recover.obj : bzip2recover.c \
+          sys$disk:[.vms]vms_main_wrapper.c \
+          sys$disk:[.vms]gnv_bzip2recover.c_first
+        $(CC)$(CFLAGS_BZR)/OBJ=$(MMS$TARGET) $(MMS$SOURCE) \
+           /first_include=sys$disk:[.vms]gnv_bzip2recover.c_first
 
+.else
+
+sys$disk:[]bzip2recover.c_vax : bzip2recover.c \
+          sys$disk:[.vms]vms_main_wrapper.c \
+          sys$disk:[.vms]gnv_bzip2recover.c_first
+        @ $ type/noheader sys$disk:[.vms]gnv_bzip2recover.c_first, \
+           sys$disk:[]bzip2recover.c /output=$(MMS$TARGET)
+
+
+sys$disk:[]bzip2recover.obj : bzip2recover.c_vax
+        $(CC)$(CFLAGS_BZR)/OBJ=$(MMS$TARGET) $(MMS$SOURCE)
+.endif
 
 distclean : clean
 	# delete manual.ps;, manual.html;, manual.pdf;
