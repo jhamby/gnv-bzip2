@@ -24,7 +24,7 @@
  *
  */
 
-#ifndef __VAX
+#if __INITIAL_POINTER_SIZE
 /* All pointer results should fit in 32 bits */
 #pragma message disable maylosedata3
 #endif
@@ -40,7 +40,7 @@
 #include <fscndef.h>
 #include <stsdef.h>
 
-#ifndef __VAX
+#if __INITIAL_POINTER_SIZE
 #pragma pointer_size save
 #pragma pointer_size short
 #endif
@@ -60,18 +60,18 @@ struct filescan_itmlst_2 {
 };
 
 #pragma member_alignment restore
-#ifndef __VAX
+#if __INITIAL_POINTER_SIZE
 #pragma pointer_size restore
 #endif
 #pragma member_alignment
 
 
-#ifdef __VAX
-#define dsc_descriptor_s dsc$descriptor_s
-#define dsc_length dsc$w_length
-#else
+#if __INITIAL_POINTER_SIZE
 #define dsc_descriptor_s dsc64$descriptor_s
 #define dsc_length dsc64$q_length
+#else
+#define dsc_descriptor_s dsc$descriptor_s
+#define dsc_length dsc$w_length
 #endif
 
 int SYS$GETDVIW
@@ -127,13 +127,13 @@ char **new_argv;
 	unsigned short alldevnam_len;
 	unsigned short diskvolnam_len;
 	struct dsc_descriptor_s devname_dsc;
-#ifndef __VAX
+#if __INITIAL_POINTER_SIZE
 #pragma pointer_size save
 #pragma pointer_size short
 #endif
 	char alldevnam[64];
 	char diskvolnam[256];
-#ifndef __VAX
+#if __INITIAL_POINTER_SIZE
 #pragma pointer_size restore
 #endif
 
@@ -159,18 +159,18 @@ char **new_argv;
 	    length = nextslash - argv[0] - 1;
 
 	    /* Cast needed for HP C compiler diagnostic */
-#ifdef __VAX
-	    devname_dsc.dsc$a_pointer = (char *)&argv[0][1];
-	    devname_dsc.dsc$w_length = length;
-	    devname_dsc.dsc$b_dtype = DSC$K_DTYPE_T;
-	    devname_dsc.dsc$b_class = DSC$K_CLASS_S;
-#else
+#if __INITIAL_POINTER_SIZE
 	    devname_dsc.dsc64$w_mbo = 1;
 	    devname_dsc.dsc64$l_mbmo = -1;
 	    devname_dsc.dsc64$pq_pointer = (char *)&argv[0][1];
 	    devname_dsc.dsc64$q_length = length;
 	    devname_dsc.dsc64$b_dtype = DSC$K_DTYPE_T;
 	    devname_dsc.dsc64$b_class = DSC$K_CLASS_S;
+#else
+	    devname_dsc.dsc$a_pointer = (char *)&argv[0][1];
+	    devname_dsc.dsc$w_length = length;
+	    devname_dsc.dsc$b_dtype = DSC$K_DTYPE_T;
+	    devname_dsc.dsc$b_class = DSC$K_CLASS_S;
 #endif
 	    status = SYS$GETDVIW
 	       (EFN$C_ENF,
@@ -248,18 +248,18 @@ char **new_argv;
 	int name_len;
 	char * ext;
 
-#ifdef __VAX
-	path_desc.dsc$a_pointer = (char *)argv[0]; /* cast ok */
-	path_desc.dsc$w_length = strlen(argv[0]);
-	path_desc.dsc$b_dtype = DSC$K_DTYPE_T;
-	path_desc.dsc$b_class = DSC$K_CLASS_S;
-#else
+#if __INITIAL_POINTER_SIZE
 	path_desc.dsc64$w_mbo = 1;
 	path_desc.dsc64$l_mbmo = -1;
 	path_desc.dsc64$pq_pointer = (char *)argv[0]; /* cast ok */
 	path_desc.dsc64$q_length = strlen(argv[0]);
 	path_desc.dsc64$b_dtype = DSC$K_DTYPE_T;
 	path_desc.dsc64$b_class = DSC$K_CLASS_S;
+#else
+	path_desc.dsc$a_pointer = (char *)argv[0]; /* cast ok */
+	path_desc.dsc$w_length = strlen(argv[0]);
+	path_desc.dsc$b_dtype = DSC$K_DTYPE_T;
+	path_desc.dsc$b_class = DSC$K_CLASS_S;
 #endif
 
 	/* Don't actually need to initialize anything buf itmcode */

@@ -260,6 +260,7 @@ clean :
         if f$search("sample%.rb2") .nes. "" then delete sample%.rb2;*
         if f$search("sample%.tst") .nes. "" then delete sample%.tst;*
         if f$search("bzip2%.tmp") .nes. "" then delete bzip2%.tmp;*
+        if f$search("bzip2_help.tmp") .nes. "" then delete bzip2_help.tmp;*
         if f$search("bzcmp.1") .nes. "" then delete bzcmp.1;*
         if f$search("bzegrep.1") .nes. "" then delete bzegrep.1;*
         if f$search("bzfgrep.1") .nes. "" then delete bzfgrep.1;*
@@ -280,6 +281,9 @@ clean :
             then set prot=o:rwed cxx_repository.dir;*
         if f$search("cxx_repository.dir") .nes. "" \
             then delete cxx_repository.dir;*
+        if f$search("test_bzip2.xml") .nes. "" then delete test_bzip2.xml;*
+        if f$search("bzlib_vms_version.h") .nes. "" \
+            then delete bzlib_vms_version.h;*
 	# rm -f *.o libbz2.a bzip2 bzip2recover \
 	# sample1.rb2 sample2.rb2 sample3.rb2 \
 	# sample1.tst sample2.tst sample3.tst
@@ -315,12 +319,34 @@ sys$disk:[]decompress.obj : decompress.c
 
 sys$disk:[]decompress.o32 : decompress.c
 
-sys$disk:[]bzlib.obj : bzlib.c
+sys$disk:[]bzlib_vms_version.h : sys$disk:[.vms]make_pcsi_bzip2_kit_name.com
+        @ $ @sys$disk:[.vms]make_pcsi_bzip2_kit_name.com NOCHECK
 
-sys$disk:[]bzlib.o32 : bzlib.c
+.ifndef __VAX_
+
+sys$disk:[]bzlib.obj : bzlib.c sys$disk:[.vms]gnv_bzlib.c_first \
+          sys$disk:[]bzlib_vms_version.h
+        $(CC)$(CFLAGS)/OBJ=$(MMS$TARGET) $(MMS$SOURCE) \
+            /first_include=sys$disk:[.vms]gnv_bzlib.c_first
+
+
+sys$disk:[]bzlib.o32 : bzlib.c sys$disk:[.vms]gnv_bzlib.c_first \
+          sys$disk:[]bzlib_vms_version.h
+        $(CC)$(CFLAGS)/OBJ=$(MMS$TARGET) $(MMS$SOURCE) \
+            /first_include=sys$disk:[.vms]gnv_bzlib.c_first
+
+.else
+
+sys$disk:[]bzlib.c_vax : bzlib.c sys$disk:[.vms]gnv_bzlib.c_first
+     @ $ type/noheader sys$disk:[.vms]gnv_bzlib.c_first, \
+         sys$disk:[]bzlib.c /output=$(MMS$TARGET)
+
+sys$disk:[]bzlib.obj : bzlib.c_vax
+
+.endif
 
 .ifndef __VAX__
-sys$disk:[]bzip2.obj : bzip2.c, sys$disk:[.vms]gnv_bzip2.c_first \
+sys$disk:[]bzip2.obj : bzip2.c sys$disk:[.vms]gnv_bzip2.c_first \
           sys$disk:[.vms]vms_main_wrapper.c
         $(CC)$(CFLAGS)/OBJ=$(MMS$TARGET) $(MMS$SOURCE) \
             /first_include=sys$disk:[.vms]gnv_bzip2.c_first

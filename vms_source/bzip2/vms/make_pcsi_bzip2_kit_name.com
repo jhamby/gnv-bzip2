@@ -6,6 +6,9 @@ $!
 $! The results are stored in as logical names so that other procedures
 $! can use them.
 $!
+$! This procedure also creates a bzlib_vms_version.h file needed to give
+$! the VMS build a unique version tag.
+$!
 $! Copyright 2016, John Malmberg
 $!
 $! Permission to use, copy, modify, and/or distribute this software for any
@@ -29,6 +32,7 @@ $!
 $! Put things back on error.
 $ on warning then goto all_exit
 $!
+$!
 $! The producer is the name or common abbreviation for the entity that is
 $! making the kit.  It must be set as a logical name before running this
 $! procedure.
@@ -38,7 +42,7 @@ $! open source work, it should document who is creating the package for
 $! distribution.
 $!
 $ producer = f$trnlnm("GNV_PCSI_PRODUCER")
-$ if producer .eqs. ""
+$ if producer .eqs. "" .and. p1 .nes. "NOCHECK"
 $ then
 $   write sys$output "The logical name GNV_PCSI_PRODUCER needs to be defined."
 $   write sys$output "This should be set to the common abbreviation or name of"
@@ -48,7 +52,7 @@ $   write sys$output "a different well known producer prefix."
 $   goto all_exit
 $ endif
 $ producer_full_name = f$trnlnm("GNV_PCSI_PRODUCER_FULL_NAME")
-$ if producer_full_name .eqs. ""
+$ if producer_full_name .eqs. "" .and. p1 .nes. "NOCHECK"
 $ then
 $   write sys$output "The logical name GNV_PCSI_PRODUCER_FULL_NAME needs to"
 $   write sys$output "be defined.  This should be set to the full name of"
@@ -58,10 +62,12 @@ $   write sys$output "EX: DEFINE GNV_PCSI_PRODUCER_FULL_NAME ""First M. Last"""
 $   goto all_exit
 $ endif
 $!
-$ write sys$output "*****"
-$ write sys$output "***** Producer = ''producer'"
-$ write sys$output "*****"
-$!
+$ if producer .nes. ""
+$ then
+$   write sys$output "*****"
+$   write sys$output "***** Producer = ''producer'"
+$   write sys$output "*****"
+$ endif
 $!
 $! Base is one of 'VMS', 'AXPVMS', 'I64VMS', 'VAXVMS' and indicates what
 $! binaries are in the kit.  A kit with just 'VMS' can be installed on all
@@ -92,6 +98,8 @@ $   line_in_len = f$length(line_in)
 $   if f$locate("BZ_VERSION", line_in) .ge. line_in_len then goto version_loop
 $   value_line = f$element(1, """", line_in)
 $   value = f$element(0, ",", value_line)
+$   value_date = f$element(1, ",", value_line)
+$   value_date = f$edit(value_date, "trim")
 $   distversion = value
 $version_loop_end:
 $ close verf
@@ -128,6 +136,22 @@ $ endif
 $ raw_version = distversion
 $!
 $!
+$ ver_tag = producer
+$ if ver_tag .eqs. "" then ver_tag = "vms"
+$ bzvms_ver_file = "sys$disk:[]bzlib_vms_version.h"
+$ if f$search(bzvms_ver_file) .eqs. ""
+$ then
+$   create 'bzvms_ver_file'
+$   open/append bzvver 'bzvms_ver_file'
+$   write bzvver "#ifdef BZ_VERSION"
+$   write bzvver "#undef BZ_VERSION"
+$   write bzvver "#endif"
+$   write bzvver -
+  "#define BZ_VERSION ""''distversion'''ECO_LEVEL'-''ver_tag', ''value_date'"""
+$   close bzvver
+$ endif
+$!
+$!
 $! This translates to V0114-08 or D0115-01
 $! We can not encode the snapshot date into the version due to the way that
 $! the Polycenter Software Installation Utility evaluates the name.
@@ -153,6 +177,7 @@ $ else
 $   fversion = version
 $   version = version + "-"
 $ endif
+$!
 $!
 $! Kit type 1 is complete kit, the only type that this procedure will make.
 $ kittype = 1
