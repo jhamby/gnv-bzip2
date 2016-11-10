@@ -52,10 +52,20 @@ cflags = $(cflags32)$(cptr)
 cflags_bzr = \
   $(cnames)/debu$(clist)$(cprefix)$(cwarn)$(cinc)$(cdefs_bzr)$(cfloat)
 
+#
+# TPU symbols
+#===================
+
+UNIX_2_VMS = /COMM=sys$disk:[.vms]unix_c_to_vms_c.tpu
+
+EVE = EDIT/TPU/SECT=EVE$SECTION/NODISP
+
+
+
 # Set up the rules for use.
 #===========================================
 .SUFFIXES
-.SUFFIXES .exe .olb .obj .o32 .c .c_vax
+.SUFFIXES .exe .olb .obj .o32 .c .c_patch .c_vax
 
 .obj.exe
    $(LINK)$(LFLAGS)/NODEBUG/EXE=$(MMS$TARGET)/DSF=$(MMS$TARGET_NAME)\
@@ -123,8 +133,14 @@ all : $(LIBBZ2_SOS) $(LIBBZ2_A) extra_man \
     sys$disk:[]gnv$bzip2.exe sys$disk:[]gnv$bzip2recover.exe test
 
 sys$disk:[]gnv$bzip2.exe : sys$disk:[]$(LIBBZ2).olb sys$disk:[]bzip2.obj \
+          sys$disk:[]vms_bzip2_fopen_hack.obj \
+          sys$disk:[]vms_bzip2_redot.obj \
+          sys$disk:[]vms_bzip2_wild.obj \
           sys$disk:[]vms_crtl_init.obj
 	$(LINK)$(LFLAGS)/EXEC=sys$disk:[]gnv$bzip2.exe sys$disk:[]bzip2.obj, \
+          sys$disk:[]vms_bzip2_fopen_hack.obj, \
+          sys$disk:[]vms_bzip2_redot.obj, \
+          sys$disk:[]vms_bzip2_wild.obj, \
           sys$disk:[]vms_crtl_init.obj, $(LIBBZ2).olb/lib
 
 sys$disk:[]gnv$bzip2recover.exe : sys$disk:[]bzip2recover.obj \
@@ -266,6 +282,7 @@ clean :
         if f$search("bzfgrep.1") .nes. "" then delete bzfgrep.1;*
         if f$search("bzless.1") .nes. "" then delete bzless.1;*
         if f$search("bzip2.c_vax") .nes. "" then delete bzip2.c_vax;*
+        if f$search("bzip2.c_patch") .nes. "" then delete bzip2.c_patch;*
         if f$search("*.lis") .nes. "" then delete *.lis;*
         if f$search("*.map") .nes. "" then delete *.map;*
         if f$search("*.bck") .nes. "" then delete *.bck;*
@@ -322,7 +339,7 @@ sys$disk:[]decompress.o32 : decompress.c
 sys$disk:[]bzlib_vms_version.h : sys$disk:[.vms]make_pcsi_bzip2_kit_name.com
         @ $ @sys$disk:[.vms]make_pcsi_bzip2_kit_name.com NOCHECK
 
-.ifndef __VAX_
+.ifndef __VAX__
 
 sys$disk:[]bzlib.obj : bzlib.c sys$disk:[.vms]gnv_bzlib.c_first \
           sys$disk:[]bzlib_vms_version.h
@@ -345,14 +362,29 @@ sys$disk:[]bzlib.obj : bzlib.c_vax
 
 .endif
 
+sys$disk:[]vms_bzip2_fopen_hack.obj : sys$disk:[.vms]vms_bzip2_fopen_hack.c
+
+sys$disk:[]vms_bzip2_wild.obj : sys$disk:[.vms]vms_bzip2_wild.c
+
+sys$disk:[]vms_bzip2_redot.obj : sys$disk:[.vms]vms_bzip2_redot.c
+
+sys$disk:[]bzip2.c_patch : bzip2.c sys$disk:[.vms]bzip2.tpu
+                    $(EVE) $(UNIX_2_VMS) $(MMS$SOURCE)/OUT=$(MMS$TARGET)\
+                    /init='f$element(1, ",", "$(MMS$SOURCE_LIST)")'
+
+
 .ifndef __VAX__
-sys$disk:[]bzip2.obj : bzip2.c sys$disk:[.vms]gnv_bzip2.c_first \
+sys$disk:[]bzip2.obj : sys$disk:[]bzip2.c_patch \
+          sys$disk:[.vms]gnv_bzip2.c_first \
+	  sys$disk:[.vms]vms_bzip2_fopen_hack.h \
           sys$disk:[.vms]vms_main_wrapper.c
-        $(CC)$(CFLAGS)/OBJ=$(MMS$TARGET) $(MMS$SOURCE) \
+        $(CC)$(CFLAGS)/OBJ=$(MMS$TARGET) sys$disk:[]bzip2.c_patch \
             /first_include=sys$disk:[.vms]gnv_bzip2.c_first
 
 .else
-sys$disk:[]bzip2.c_vax : bzip2.c sys$disk:[.vms]gnv_bzip2.c_first \
+sys$disk:[]bzip2.c_vax : sys$disk:[]bzip2.c_patch \
+          sys$disk:[.vms]gnv_bzip2.c_first \
+	  sys$disk:[.vms]vms_bzip2_fopen_hack.h \
           sys$disk:[.vms]vms_main_wrapper.c
      @ $ type/noheader sys$disk:[.vms]gnv_bzip2.c_first, \
          sys$disk:[]bzip2.c /output=$(MMS$TARGET)

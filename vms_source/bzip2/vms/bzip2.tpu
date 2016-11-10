@@ -1,0 +1,213 @@
+! File bzip2.tpu
+!
+! Copyright 2016, John Malmberg
+!
+! Permission to use, copy, modify, and/or distribute this software for any
+! purpose with or without fee is hereby granted, provided that the above
+! copyright notice and this permission notice appear in all copies.
+!
+! THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+! WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+! MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+! ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+! WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+! ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
+! OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+!
+!============================================================================
+!
+! Initialization for white space definition
+!
+ws := SPAN("    ");
+!
+! VMS specific patches needed.
+!
+
+! containsDubiusChars
+!Bool containsDubiousChars ( Char* name )
+r1 := SEARCH_QUIETLY('Bool containsDubiousChars', FORWARD);
+IF (r1 <> 0) THEN
+    POSITION(END_OF(r1));
+ENDIF;
+VMS_INSERT_BEFORE('#  if BZ_UNIX', '#  ifdef __VMS');
+COPY_LINE('   int wild;');
+COPY_LINE('   /* On VMS, re-parse and use the fresh result. */');
+COPY_LINE('   vms_wild( name, &wild);');
+COPY_LINE('   return wild;');
+COPY_LINE('#  endif /* __VMS */');
+
+!
+! Add VMS suffixes
+!-------------------------------
+VMS_INSERT_BEFORE('#define BZ_N_SUFFIX_PAIR', '#ifndef __VMS');
+VMS_INSERT_AFTER('#define BZ_N_SUFFIX_PAIR', '#else');
+SPLIT_LINE;
+COPY_LINE('#  define BZ_N_SUFFIX_PAIRS 6');
+COPY_LINE('#endif');
+
+VMS_INSERT_BEFORE('const Char* zSuffix', '#ifndef __VMS');
+VMS_INSERT_AFTER('= { "", "", ".tar"', '#else');
+SPLIT_LINE;
+COPY_LINE('const Char* zSuffix[BZ_N_SUFFIX_PAIRS]');
+COPY_LINE('   = { "-bz2", "-bz", ".bz2", ".bz", ".tbz2", ".tbz" };');
+COPY_LINE('const Char* unzSuffix[BZ_N_SUFFIX_PAIRS]');
+COPY_LINE('   = { "", "", "", "", ".tar", ".tar" };');
+SPLIT_LINE;
+COPY_LINE('#endif');
+
+!Bool hasSuffix
+VMS_INSERT_BEFORE('if (ns < nx) ', '#ifndef __VMS');
+VMS_INSERT_AFTER('if (strcmp(s + ns', '#else');
+SPLIT_LINE;
+COPY_LINE('   {');
+COPY_LINE('      char * shell;');
+COPY_LINE('      shell = getenv("SHELL");');
+COPY_LINE('      if (shell != NULL) {');
+COPY_LINE('         if (ns < nx) return False;');
+COPY_LINE('         if (strcmp(s + ns - nx, suffix) == 0) return True;');
+COPY_LINE('      } else {');
+COPY_LINE('         int sts;');
+COPY_LINE('         int i;');
+COPY_LINE('         char * s2;');
+COPY_LINE('         s2 = strdup(s);');
+COPY_LINE('         if (s2 == NULL) {');
+COPY_LINE('            outOfMemory();');
+COPY_LINE('         }');
+COPY_LINE('         trimFileNameVersion(s2);');
+COPY_LINE('         ns = strlen(s2);');
+COPY_LINE('         sts = strcasecmp(s2 + ns - nx, suffix) == 0;');
+COPY_LINE('         free(s2);');
+COPY_LINE('         return sts;');
+COPY_LINE('      }');
+COPY_LINE('   }');
+COPY_LINE('#endif');
+
+
+!Bool mapSuffix
+!   strcat ( name, newSuffix );
+r1 := SEARCH_QUIETLY('Bool mapSuffix', FORWARD);
+IF (r1 <> 0) THEN
+    POSITION(END_OF(r1));
+ENDIF;
+VMS_INSERT_BEFORE('return True;', '#ifdef __VMS');
+COPY_LINE('   vms_redot( name);')'
+COPY_LINE('#endif /* __VMS */');
+
+!void compress
+VMS_INSERT_BEFORE('strcat ( outName, ".bz2" );', '#ifdef __VMS');
+COPY_LINE('   {');
+COPY_LINE('      char * shell;');
+COPY_LINE('      shell = getenv("SHELL");');
+COPY_LINE('      if (shell != NULL) {');
+COPY_LINE('         strcat ( outName, ".bz2" );');
+COPY_LINE('      } else {');
+COPY_LINE('         trimFileNameVersion( outName );');
+COPY_LINE('         strcat ( outName, "-bz2" );');
+COPY_LINE('      }');
+COPY_LINE('   }');
+VMS_INSERT_AFTER('strcat ( outName, ".bz2" );', '#else');
+SPLIT_LINE;
+VMS_INSERT_BEFORE('break;', '#endif');
+
+!#if BZ_VMS
+!#  define EXT_BZ2 "-bz2"
+!#else /* BZ_VMS */
+!#  define EXT_BZ2 ".bz2"
+!#endif /* BZ_VMS [else] */
+
+!      case SM_F2F:
+!         copyFileName ( inName, name );
+!         copyFileName ( outName, name );
+!#if BZ_VMS
+!         trimFileNameVersion( outName);
+!#endif /* BZ_VMS */
+!         strcat ( outName, EXT_BZ2 );
+
+!void uncompress
+r1 := SEARCH_QUIETLY('void uncompress (', FORWARD);
+IF (r1 <> 0) THEN
+    POSITION(END_OF(r1));
+ENDIF;
+
+VMS_INSERT_AFTER('struct MY_STAT statBuf;', '#ifdef __VMS');
+COPY_LINE('   char * shell');
+SPLIT_LINE;
+COPY_LINE('   shell = getenv("SHELL");');
+COPY_LINE('#endif');
+SPLIT_LINE;
+
+VMS_INSERT_BEFORE('for (i = 0; i < BZ_N_SUFFIX_PAIRS;', '#ifdef __VMS');
+COPY_LINE('   if (shell == null) trimFileNameVersion( OutName );');
+COPY_LINE('#endif /* __VMS */');
+
+VMS_INSERT_BEFORE('strcat ( outName, ".out" );', '#ifdef __VMS');
+COPY_LINE('         if (shell != NULL) {');
+COPY_LINE('            strcat ( outName, ".out" );');
+COPY_LINE('         } else {');
+COPY_LINE('            strcat ( outName, "-out" );');
+COPY_LINE('         }');
+COPY_LINE('#else');
+VMS_INSERT_AFTER('strcat ( outName, ".out" );', '#endif /* __VMS */');
+
+!   struct MY_STAT statBuf;
+!
+!#if BZ_VMS
+!#  define EXT_OUT "-out"
+!#else /* BZ_VMS */
+!#  define EXT_OUT ".out"
+!#endif /* BZ_VMS [else] */
+
+!      case SM_F2F:
+!         copyFileName ( inName, name );
+!         copyFileName ( outName, name );
+!#if BZ_VMS
+!         trimFileNameVersion( outName);
+!#endif /* BZ_VMS */
+!         for (i = 0; i < BZ_N_SUFFIX_PAIRS; i++)
+!            if (mapSuffix(outName,zSuffix[i],unzSuffix[i]))
+!               goto zzz;
+!         cantGuess = True;
+!         strcat ( outName, EXT_OUT );
+
+
+!static
+!Cell *snocString ( Cell *root, Char *name )
+r1 := SEARCH_QUIETLY('Cell *snocString', FORWARD);
+IF (r1 <> 0) THEN
+    POSITION(END_OF(r1));
+ENDIF
+
+VMS_INSERT_BEFORE('/*----------------', '#ifdef __VMS');
+SPLIT_LINE;
+COPY_LINE('/*---------------------------------------------*/');
+COPY_LINE('static');
+COPY_LINE('Cell *append_vms_filespec(Cell *root, char *name)');
+COPY_LINE('{');
+COPY_LINE('   char *nm;');
+COPY_LINE('   int wild;');
+SPLIT_LINE;
+COPY_LINE('   nm = vms_wild(name, &wild);');
+COPY_LINE('   if (wild) {');
+COPY_LINE('      /* Wild-card file spec.  Use the full (resultant) name. */');
+COPY_LINE('      while (nm != NULL) {');
+COPY_LINE('         root = snocString(root, nm);');
+COPY_LINE('         nm = vms_wild(NULL, NULL);');
+COPY_LINE('      }');
+COPY_LINE('   } else {');
+COPY_LINE('      /* No wild-card.  Use the user-specified name directly. */');
+COPY_LINE('      root = snocString(root, name);');
+COPY_LINE('   }');
+COPY_LINE('   return root;');
+COPY_LINE('}');
+COPY_LINE('#undef APPEND_FILESPEC');
+COPY_LINE('#   define APPEND_FILESPEC( root, name) \');
+COPY_LINE('      root = append_vms_filespec( (root), (name))');
+COPY_LINE('#endif');
+COPY_LINE('#endif /* __VMS */');
+SPLIT_LINE;
+
+!IntNative main ( IntNative argc, Char *argv[] )
+!
+!   for (i = 1; i <= argc-1; i++)
+!      APPEND_FILESPEC(argList, argv[i]);
+!

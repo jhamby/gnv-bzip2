@@ -138,41 +138,31 @@ This kit is designed to be used with the GNV Bash 4.2.45 or later kit.
 
 Fixes and enhancements in the Bzip2 1.06 kit.
 
-Plan to merge most of the Steven Schweda ported features:
+Merged most of the Steven Schweda ported features:
 
 * Version suffix added to indicate a GNV variant.  This appears to be
   a requirement of the BZIP2 license if there are any source code differences,
-  which of course there probably will be for VMS.
+  which of there are for VMS.
 
-* In bzip2.c, defines a macro FOPEN_INPUT to wrap fopen() to force opening in
-  binary stream() mode.  Some other similar changes.
+* In bzip2.c, a wrapper to fopen() to force opening files in stream mode.
 
-* # define PATH_SET ']'.  Not exactly true for ODS-5.
+* For VMS add additional suffixes of "-bz2", "-bz", and substitute
+  "-out" for ".out" and "-bz2" for ".bz2" when not run from a Posix shell.
 
-* Some code for #define ACCEPT_VMS_SUFFIXES.
+* Handle VMS format filenames with escaped periods in the command line.
 
-* For VMS add additional suffixes of "-bz2", "-bz".  This may need
-  an edit script to update the source, depending on how we support
-  ODS-2 filenames.
+* Use BZIP_OPTS or BZIP2_OPTS environment variables before trying to use
+  BZIP or BZIP environment variables for options when run from DCL.
 
-  In mapSuffix, a vms_redot() routine is called.
+* Use BZIP or BZIP2 environment variables before trying to use BZIP_OPTS or
+  BZIP2_OPTS environment variables when run from a Posix shell.
 
-  #define EXT_BZ2 as "-bz2" or ".bz2"
-  EXT_BZ2 is not in original code.
-
-  #define EXT_OUT as "-out" or ".out"
-
-* Trim the filename version on VMS.
-  Since we will be using DECC$FILENAME_REPORT_UNIX with the setting
-  to drop the filename version, will need to look at this.
-
-* Use BZIP_OPTS or BZIP2_OPTS instead of conflicting with foreign
-  commands when launched from DCL.
+* DCL foreign commands will not be processed as environment variables.
 
 * Both 32 bit and 64 bit pointer variants shared images, except on VAX.
 
 * The object libraries are provided as a special case to allow building
-  standalone zip/unzip binaries.  It is recommended that sharec images
+  standalone zip/unzip binaries.  It is recommended that shared images
   be used for the other utilities.
 
 The names of the bzip2 images have been prefixed with GNV$ to prevent

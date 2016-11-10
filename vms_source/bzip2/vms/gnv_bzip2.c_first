@@ -89,3 +89,31 @@ static int vms_fchmod(int fd, mode_t mode) {
 #define fchmod vms_fchmod
 
 #endif
+
+#include "vms_lstat_hack.h"
+
+#include "vms_bzip2_fopen_hack.h"
+
+void vms_redot(char *file_spec);
+
+char *vms_wild(char *file_spec, int *wild);
+
+static void trimFileNameVersion( char *file_name ) {
+   char *cp;
+
+   /* Find the first (apparent) non-version-digit. */
+   for (cp = file_name+ strlen( file_name)- 1;
+        (*cp >= '0') && (*cp <= '9') && (cp != file_name);
+        cp--);
+
+   /* If the pre-digit character exists and is an unescaped
+      semi-colon, then terminate the string at the semi-colon.
+   */
+   if (cp != file_name) {
+      if ((*cp == ';') && (*(cp- 1) != '^')) {
+         *cp = '\0';
+      }
+   }
+   return;
+}
+
