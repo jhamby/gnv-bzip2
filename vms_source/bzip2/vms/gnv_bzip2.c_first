@@ -1,8 +1,10 @@
 /* File:gnv_bzip2.c_first */
 
+#define NEED_PIPE_EOF
 #include "vms_main_wrapper.c"
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <errno.h>
 static char * vms_getenv(const char * env_name) {
 
@@ -33,7 +35,7 @@ static char * vms_getenv(const char * env_name) {
         }
     } else {
         /* GNV behavior, name takes precedence */
-        if (name != NULL) {
+        if ((name != NULL) && (name[0] != '$')) {
             return name;
         }
         if (name_opts != NULL) {
@@ -117,3 +119,15 @@ static void trimFileNameVersion( char *file_name ) {
    return;
 }
 
+static size_t vms_bzip2_fwrite(const void *ptr, size_t item_size,
+                               size_t item_cnt, FILE *fp) {
+    int status;
+    if (item_size == 1) {
+        status = fwrite(ptr, item_cnt, item_size, fp);
+    } else {
+        status = fwrite(ptr, item_size, item_cnt, fp);
+    }
+    return status;
+}
+
+#define fwrite vms_bzip2_fwrite

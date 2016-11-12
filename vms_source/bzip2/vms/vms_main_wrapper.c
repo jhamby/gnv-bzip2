@@ -34,6 +34,12 @@
 #include <ctype.h>
 #include <stdlib.h>
 
+#ifdef NEED_PIPE_EOF
+#include <unixio.h>
+#include <unixlib.h>
+#include <unistd.h>
+#endif
+
 #include <descrip.h>
 #include <dvidef.h>
 #include <efndef.h>
@@ -434,7 +440,19 @@ char **new_argv;
 
     }
 
-    exit(original_main(argc, new_argv VMS_ENV));
+    status = original_main(argc, new_argv VMS_ENV);
+#ifdef NEED_PIPE_EOF
+    {
+        int is_pipe;
+        int status1;
+        is_pipe = isapipe(STDOUT_FILENO);
+        if (is_pipe) {
+            status1 = decc$write_eof_to_mbx(STDOUT_FILENO);
+        }
+    }
+#endif
+    exit(status);
+
     return 1; /* Needed to silence compiler diagnostic */
 }
 
