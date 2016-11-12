@@ -104,22 +104,36 @@ char *vms_wild( char *file_spec, int *wild)
 
     if (file_spec != NULL)
     {
+
+        /* J. Malmberg - We only want to use explicit wildcards, not implied */
+        char * wild_char_ptr;
+
+        /* J. Malmberg - Allow 64 bit pointers */
 #if __INITIAL_POINTER_SIZE
 #   pragma pointer_size save
 #   pragma pointer_size 32
 
         /* Need to force the file_spec string to be in 32 bit pointer range */
         char *file_spec_int;
-        file_spec_int = _strdup32(file_spec);
 #   pragma pointer_size restore
-#else
-        char *file_spec_int;
-        file_spec_int = file_spec;
 #endif
 
         vms_wild_detected = 0;          /* Clear wild-card flag. */
         if (wild != NULL)
             *wild = 0;
+
+        /* J. Malmberg - Only explicit wild cards */
+        wild_char_ptr = strpbrk(file_spec, "*?");
+        if (wild_char_ptr == NULL)
+        {
+            return NULL;
+        }
+
+#if __INITIAL_POINTER_SIZE
+        file_spec_int = _strdup32(file_spec);
+#else
+        file_spec_int = file_spec;
+#endif
 
         /* Set up the FAB and NAM[L] blocks. */
 

@@ -8,8 +8,8 @@ int vms_bzip2_open(const char *file_spec, int flags, mode_t mode);
 
 
 static FILE vms_bzip2_fdopen(int fd, const char * mode) {
-    if ((mode[0] == 'w') && (mode[1] == 0)) {
-       return fdopen(fd, "wb");
+    if (mode[0] == 'w') {
+       return fdopen(fd, "w");
     } else {
        return fdopen(fd, mode);
     }

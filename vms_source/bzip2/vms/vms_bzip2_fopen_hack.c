@@ -196,7 +196,7 @@ int vms_bzip2_open(const char *file_spec, int flags, mode_t mode) {
     int fd;
 
     rms_defaults_init();
-    if (mode & O_CREAT != 0) {
+    if (flags & O_CREAT != 0) {
         if (rms_info.valid > 0) {
             if (rms_info.rms_mbf_active) {
                 fd =  open(file_spec, flags, mode, "ctx=stm",

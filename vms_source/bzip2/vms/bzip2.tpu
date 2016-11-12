@@ -90,7 +90,7 @@ IF (r1 <> 0) THEN
     POSITION(END_OF(r1));
 ENDIF;
 VMS_INSERT_BEFORE('return True;', '#ifdef __VMS');
-COPY_LINE('   vms_redot( name);')'
+COPY_LINE('   vms_redot( name);');
 COPY_LINE('#endif /* __VMS */');
 
 !void compress
@@ -105,8 +105,7 @@ COPY_LINE('         trimFileNameVersion( outName );');
 COPY_LINE('         strcat ( outName, "-bz2" );');
 COPY_LINE('      }');
 COPY_LINE('   }');
-VMS_INSERT_AFTER('strcat ( outName, ".bz2" );', '#else');
-SPLIT_LINE;
+COPY_LINE('#else');
 VMS_INSERT_BEFORE('break;', '#endif');
 
 !#if BZ_VMS
@@ -130,14 +129,15 @@ IF (r1 <> 0) THEN
 ENDIF;
 
 VMS_INSERT_AFTER('struct MY_STAT statBuf;', '#ifdef __VMS');
-COPY_LINE('   char * shell');
+SPLIT_LINE;
+COPY_LINE('   char * shell;');
 SPLIT_LINE;
 COPY_LINE('   shell = getenv("SHELL");');
 COPY_LINE('#endif');
 SPLIT_LINE;
 
 VMS_INSERT_BEFORE('for (i = 0; i < BZ_N_SUFFIX_PAIRS;', '#ifdef __VMS');
-COPY_LINE('   if (shell == null) trimFileNameVersion( OutName );');
+COPY_LINE('   if (shell == NULL) trimFileNameVersion( outName );');
 COPY_LINE('#endif /* __VMS */');
 
 VMS_INSERT_BEFORE('strcat ( outName, ".out" );', '#ifdef __VMS');
@@ -175,7 +175,7 @@ VMS_INSERT_AFTER('strcat ( outName, ".out" );', '#endif /* __VMS */');
 r1 := SEARCH_QUIETLY('Cell *snocString', FORWARD);
 IF (r1 <> 0) THEN
     POSITION(END_OF(r1));
-ENDIF
+ENDIF;
 
 VMS_INSERT_BEFORE('/*----------------', '#ifdef __VMS');
 SPLIT_LINE;
@@ -200,9 +200,8 @@ COPY_LINE('   }');
 COPY_LINE('   return root;');
 COPY_LINE('}');
 COPY_LINE('#undef APPEND_FILESPEC');
-COPY_LINE('#   define APPEND_FILESPEC( root, name) \');
+COPY_LINE('#define APPEND_FILESPEC( root, name) \');
 COPY_LINE('      root = append_vms_filespec( (root), (name))');
-COPY_LINE('#endif');
 COPY_LINE('#endif /* __VMS */');
 SPLIT_LINE;
 

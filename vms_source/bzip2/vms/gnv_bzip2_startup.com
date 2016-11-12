@@ -95,9 +95,9 @@ $   if f$search(file) .nes. ""
 $   then
 $      if .not. f$file_attributes(file, "known")
 $      then
-$          install ADD 'file'/OPEN/SHARE/HEADER/PRIV=('privs')
+$          install ADD 'file'/OPEN/SHARE/HEADER
 $      else
-$          install REPLACE 'file'/OPEN/SHARE/HEADER/PRIV=('privs')
+$          install REPLACE 'file'/OPEN/SHARE/HEADER
 $      endif
 $   endif
 $   i = i + 1
