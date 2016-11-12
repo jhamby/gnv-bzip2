@@ -29,6 +29,10 @@
 #include <vms_fake_path/unistd.h>
 #include <vms_fake_path/string.h>
 #include <vms_fake_path/errno.h>
+/* Bug in VAX/VMS 7.3 errno.h */
+#ifndef cma$tis_errno_get_addr
+#define cma$tis_errno_get_addr     CMA$TIS_ERRNO_GET_ADDR
+#endif
 #include <vms_fake_path/unixio.h>
 #undef lstat
 #undef unlink
@@ -40,12 +44,12 @@
 #include <libfildef.h>
 #include <dscdef.h>
 #include <stsdef.h>
-#include <vms_fake_path/errno.h>
 
 int decc$chdir(const char *__dir_spec, ...);
 
 #define VMS_LSH_FNAME_LEN 4096
 
+#if (__CRTL_VER >= 80300000)
 static int vms_lstat(const char * name, struct stat * st) {
     int result;
     int presult;
@@ -131,6 +135,7 @@ static int vms_lstat(const char * name, struct stat * st) {
 
     return result;
 }
+#endif
 
 static int do_exe_stat(const char *path, struct stat *buf) {
    char *exepath = (char *)malloc(strlen(path) + 5);
@@ -271,6 +276,7 @@ static int vms_unlink(const char * name) {
     return result;
 }
 
+#if (__CRTL_VER >= 80300000)
 static int vms_readlink(const char * path, char *buf, size_t bufsize) {
     int result;
     int pcp_mode;
@@ -281,7 +287,6 @@ static int vms_readlink(const char * path, char *buf, size_t bufsize) {
     }
     /* Error?  May be a bug so try again */
 
-#if (__CRTL_VER >= 80300000)
     /* Save the PCP mode */
     pcp_mode = decc$feature_get("DECC$POSIX_COMPLIANT_PATHNAMES",
                                 __FEATURE_MODE_CURVAL);
@@ -300,9 +305,15 @@ static int vms_readlink(const char * path, char *buf, size_t bufsize) {
     decc$feature_set("DECC$POSIX_COMPLIANT_PATHNAMES",
                       __FEATURE_MODE_CURVAL,
                       pcp_mode);
-#endif
     return result;
 }
+#else
+/* TODO: else simulate with non-std-stat and lib$fid_to_name */
+static int vms_readlink(const char * path, char *buf, size_t bufsize) {
+   errno = ENOSYS;
+   return -1;
+}
+#endif
 
 int  decc$access (const char *__file_spec, int __mode);
 
@@ -509,7 +520,7 @@ static int vms_mkdir(const char * file, mode_t mode) {
 
 /* TODO: backporting to older VMS is mostly not compiling these hacks
    since the long directory paths and DID format paths do not exist */
-
+#ifdef S_INO_RVN_NMX
 static int tovms_rmdir(const char * unix_dir) {
     int result;
     int exists;
@@ -538,9 +549,9 @@ static int tovms_rmdir(const char * unix_dir) {
     sprintf(vms_dir, "[%d,%d,%d]", did[0], did[1], did[2]);
     dir_len = strlen(vms_dir);
 
+    int len;
 #if (__CRTL_VER >= 80300000)
     int pcp_mode;
-    int len;
     /* Save the PCP mode */
     pcp_mode = decc$feature_get("DECC$POSIX_COMPLIANT_PATHNAMES",
                                 __FEATURE_MODE_CURVAL);
@@ -587,6 +598,7 @@ static int tovms_rmdir(const char * unix_dir) {
 #endif
     return result;
 }
+#endif
 
 static int vms_rmdir(const char * file) {
     int result;
@@ -613,6 +625,7 @@ static int vms_rmdir(const char * file) {
     }
 
     result = rmdir(file);
+#ifdef S_INO_RVN_NMX
     if (result != 0) {
         /* helper for unlinkat */
         char * slash;
@@ -621,11 +634,16 @@ static int vms_rmdir(const char * file) {
             result = tovms_rmdir(file);
         }
     }
+#endif
     return result;
 }
 
 #define stat(file, buf) vms_stat(file, buf)
+#if (__CRTL_VER >= 80300000)
 #define lstat vms_lstat
+#else
+#define lstat vms_stat
+#endif
 #define unlink vms_unlink
 #define remove vms_unlink
 #define readlink vms_readlink

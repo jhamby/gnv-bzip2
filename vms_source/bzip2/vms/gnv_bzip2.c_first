@@ -6,6 +6,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
+/* Bug in VAX/VMS 7.3 errno.h */
+#ifndef cma$tis_errno_get_addr
+#define cma$tis_errno_get_addr     CMA$TIS_ERRNO_GET_ADDR
+#endif
+
 static char * vms_getenv(const char * env_name) {
 
     char * name;
@@ -52,7 +57,6 @@ static char * vms_getenv(const char * env_name) {
 
 #if defined( __VAX) || (__CRTL_VER < 80300000)
 
-#include <errno.h>
 #include <stat.h>
 #include <stdlib.h>
 #include <unixio.h>

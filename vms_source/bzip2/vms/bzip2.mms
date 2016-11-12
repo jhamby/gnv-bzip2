@@ -354,11 +354,12 @@ sys$disk:[]bzlib.o32 : bzlib.c sys$disk:[.vms]gnv_bzlib.c_first \
 
 .else
 
-sys$disk:[]bzlib.c_vax : bzlib.c sys$disk:[.vms]gnv_bzlib.c_first
+sys$disk:[]bzlib.c_vax : bzlib.c sys$disk:[.vms]gnv_bzlib.c_first \
+         sys$disk:[]bzlib_vms_version.h
      @ $ type/noheader sys$disk:[.vms]gnv_bzlib.c_first, \
          sys$disk:[]bzlib.c /output=$(MMS$TARGET)
 
-sys$disk:[]bzlib.obj : bzlib.c_vax
+sys$disk:[]bzlib.obj : sys$disk:[]bzlib.c_vax
 
 .endif
 
@@ -409,7 +410,7 @@ sys$disk:[]bzip2recover.c_vax : bzip2recover.c \
            sys$disk:[]bzip2recover.c /output=$(MMS$TARGET)
 
 
-sys$disk:[]bzip2recover.obj : bzip2recover.c_vax
+sys$disk:[]bzip2recover.obj : sys$disk:[]bzip2recover.c_vax
         $(CC)$(CFLAGS_BZR)/OBJ=$(MMS$TARGET) $(MMS$SOURCE)
 .endif
 

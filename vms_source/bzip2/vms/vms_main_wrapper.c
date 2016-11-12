@@ -34,9 +34,18 @@
 #include <ctype.h>
 #include <stdlib.h>
 
+#if (__CRTL_VER < 70200000)
+#ifdef NEED_PIPE_EOF
+#undef NEED_PIPE_EOF
+#endif
+#endif
 #ifdef NEED_PIPE_EOF
 #include <unixio.h>
-#include <unixlib.h>
+/* #include <unixlib.h> */
+/* unixlib was included for only write_eof_to_mbx, which is not present
+   in VAX/VMS 7.3
+*/
+int decc$write_eof_to_mbx (int __fd);
 #include <unistd.h>
 #endif
 

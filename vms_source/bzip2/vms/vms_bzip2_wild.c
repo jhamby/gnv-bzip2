@@ -30,6 +30,10 @@
 #  define NAM_MAXRSS NAML$C_MAXRSS
 #else
 #  define FAB_OR_NAML( fab, nam) fab
+#  define FAB_OR_NAML_DNA fab$l_dna
+#  define FAB_OR_NAML_DNS fab$b_dns
+#  define FAB_OR_NAML_FNA fab$l_fna
+#  define FAB_OR_NAML_FNS fab$b_fns
 #  define CC_RMS_NAM cc$rms_nam
 #  define FAB_NAM fab$l_nam
 #  define NAM_STRUCT NAM
@@ -112,10 +116,11 @@ char *vms_wild( char *file_spec, int *wild)
 #if __INITIAL_POINTER_SIZE
 #   pragma pointer_size save
 #   pragma pointer_size 32
-
         /* Need to force the file_spec string to be in 32 bit pointer range */
         char *file_spec_int;
 #   pragma pointer_size restore
+#else
+        char *file_spec_int;
 #endif
 
         vms_wild_detected = 0;          /* Clear wild-card flag. */
