@@ -40,7 +40,7 @@ $   if file .eqs. "," then goto utils_loop_end
 $   call update_old_image 'file'
 $   i = i + 1
 $   goto utils_loop
-$cutils_loop_end:
+$utils_loop_end:
 $!
 $!
 $ if .not. VAX

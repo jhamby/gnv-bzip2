@@ -35,22 +35,20 @@ $ then
 $   set proc/parse=extended
 $ endif
 $!
-$ usr_bin = "bzip2,bunzip2,bzcat" for gnv$bzip2
-$           "bzegrep,bzfgrep" bzgrep
-$           "bzmore" bzliess
-$           "bzcmp"  bzdiff
-$!
-$! list = bin_files
-$! prefix = "[bin]"
-$! gosub aliases_list
+$ usr_bin = "bzip2,bunzip2,bzcat"
+$!           "bzegrep,bzfgrep" bzgrep
+$!           "bzmore" bzless
+$!           "bzcmp"  bzdiff
 $!
 $ list = usr_bin
 $ prefix = "[usr.bin]"
 $ gosub aliases_list
 $!
-$! list = usr_sbin
-$! prefix = "[usr.sbin]"
-$! gosub aliases_list
+$ call do_alias "bzegrep" "''prefix'" "bzgrep"
+$ call do_alias "bzfgrep" "''prefix'" "bzgrep"
+$!
+$ call do_alias "bzmore" "''prefix'" "bzless"
+$ call do_alias "bzcmp" "''prefix'" "bzdiff"
 $!
 $ exit
 $!
@@ -60,7 +58,7 @@ $alias_list_loop:
 $   name = f$element(i, ",", list)
 $   if name .eqs. "" then goto alias_list_loop_end
 $   if name .eqs. "," then goto alias_list_loop_end
-$   call do_alias "''name'" "''prefix'" "''name'"
+$   call do_alias "''name'" "''prefix'" ""
 $   i = i + 1
 $   goto alias_list_loop
 $alias_list_loop_end:
@@ -80,7 +78,12 @@ $!
 $!
 $! P1 is the filename, p2 is the directory prefix
 $add_alias: subroutine
-$ file = "gnv$gnu:''p2'gnv$''p1'.EXE"
+$ if p3 .eqs. ""
+$ then
+$   file = "gnv$gnu:''p2'gnv$''p1'.EXE"
+$ else
+$   file = "gnv$gnu:''p2'''pe'."
+$ endif
 $ alias = "gnv$gnu:''p2'''p1'."
 $ if f$search(file) .nes. ""
 $ then
@@ -98,7 +101,12 @@ $ exit
 $ENDSUBROUTINE ! add_alias
 $!
 $remove_alias: subroutine
-$ file = "gnv$gnu:''p2'gnv''p1'.EXE"
+$ if p3 .eqs. ""
+$ then
+$   file = "gnv$gnu:''p2'gnv$''p1'.EXE"
+$ else
+$   file = "gnv$gnu:''p2'''pe'."
+$ endif
 $ file_fid = "No_file_fid"
 $ alias = "gnv$gnu:''p2'''p1'."
 $ if f$search(file) .nes. ""

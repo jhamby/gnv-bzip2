@@ -295,6 +295,7 @@ $!-------------------------
 $   filetype = f$parse(pathname,,,"TYPE")
 $   filetype_u = f$edit(filetype, "upcase")
 $   filename = f$parse(pathname,,,"NAME")
+$   if filename .eqs. "" .and. filetype .eqs. "." then goto inst_dir_loop
 $   if filetype_u .nes. ".DIR" then goto inst_file
 $!
 $!  process directory lines for rename.
@@ -306,11 +307,7 @@ $       line_out = ""
 $   endif
 $   if arch_code .nes. "V"
 $   then
-$       if line_out .nes. "" then write pdsc line_out,","
 $       line_out = "   ""rename pcsi$destination:''pathname' ''filename'.DIR"""
-$   else
-$       if line_out .nes. "" then write pdsc line_out
-$       line_out = ""
 $   endif
 $   goto inst_dir_loop
 $!
@@ -338,6 +335,12 @@ $!
 $   filetype = f$parse(pathname,,,"TYPE")
 $   filename = f$parse(pathname,,,"NAME") + filetype
 $inst_file:
+$   if filename .eqs. "."
+$   then
+$       if line_out .nes. "" then write pdsc line_out
+$       line_out = ""
+$       goto inst_file_loop
+$   endif
 $   if arch_code .nes. "V"
 $   then
 $       if line_out .nes. "" then write pdsc line_out,","
@@ -352,6 +355,7 @@ $   goto inst_file_loop
 $!
 $inst_alias_loop_end:
 $!
+$if line_out .eqs. "" then line_out = "   ""continue"""
 $write pdsc line_out
 $write pdsc "        ) ;"
 $close flst
