@@ -140,9 +140,9 @@ Fixes and enhancements in the Bzip2 1.06 kit.
 
 Merged most of the Steven Schweda ported features:
 
-* Version suffix added to indicate a GNV variant.  This appears to be
-  a requirement of the BZIP2 license if there are any source code differences,
-  which of there are for VMS.
+* A suffix has been added to the version string to indicate a GNV variant.
+  This appears to be a requirement of the BZIP2 license if there are any
+  source code differences, which of there are for VMS.
 
 * In bzip2.c, a wrapper to fopen() to force opening files in stream mode.
 
@@ -158,6 +158,12 @@ Merged most of the Steven Schweda ported features:
   BZIP2_OPTS environment variables when run from a Posix shell.
 
 * DCL foreign commands will not be processed as environment variables.
+
+Additional features:
+
+* In bzip2.c a wrapper to fwrite() writes out a chunk at a time instead
+  of a byte at a time.  This has a significant speedup when piped through
+  GNU tar.
 
 * Both 32 bit and 64 bit pointer variants shared images, except on VAX.
 
@@ -186,7 +192,8 @@ features.
 Closed bugs:
 Ticket #        Title
 --------        ---------------------------------------------------------------
-
+39              Building bzip2 doesn't work.
+                https://sourceforge.net/p/gnv/bugs/39/
 
 There may have also been other bugs in the GNV ports of bzip2 for OpenVMS
 that were not officially recorded but have now been fixed as a result of
