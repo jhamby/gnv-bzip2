@@ -209,7 +209,7 @@ $       if line_out .nes. "" then write pdsc line_out,","
 $       line_out = line
 $       goto ex_ins_loop
 $ex_ins_loop_end:
-$   if line_out .eqs. "" then line_out = "continue"
+$   if line_out .eqs. "" then line_out = "   continue"
 $   write pdsc line_out
 $   line_out = ""
 $   write pdsc "      )"
