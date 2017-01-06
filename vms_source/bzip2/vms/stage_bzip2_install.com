@@ -128,9 +128,11 @@ $!       Source is [.'arch']xxx.exe
 $!       Destination1 is new_gnu:[bin]gnv$xxx.exe
 $!       Destination2 is new_gnu:[bin]xxx.  (alias)
 $!       Destination2 is new_gnu:[bin]xxx.exe  (alias)
-$!       We put all in new_gnu:[bin] instead of some in [usr.bin] because
-$!       older GNV kits incorrectly put some images in [bin] and [bin]
+$!       We normally put all in new_gnu:[bin] instead of some in [usr.bin]
+$!       because older GNV kits incorrectly put some images in [bin] and [bin]
 $!       comes first in the search list.
+$!       If there is no previous kit with the image in the wrong place, then
+$!       this hack is not needed.
 $   if f$locate("gnv$lib", tname) .eq. 0
 $   then
 $       goto inst_file_loop
@@ -140,9 +142,16 @@ $   then
 $       myfile_len = f$length(tname)
 $       myfile = f$extract(4, myfile_len, tname)
 $       source = "''tname'''ttype'"
-$       dest1 = "new_gnu:[bin]''tname'''ttype'"
-$       dest2 = "new_gnu:[bin]''myfile'."
-$       dest3 = "new_gnu:[bin]''myfile'.exe"
+$       dest_old = "old_gnu:[bin]''myfile'.exe"
+$       if f$search(dest_old) .nes. ""
+$       then
+$           ddir = "[bin]"
+$       else
+$           ddir =  tdir - "gnv."
+$       endif
+$       dest1 = "new_gnu:''ddir'''tname'''ttype'"
+$       dest2 = "new_gnu:''ddir'''myfile'."
+$       dest3 = "new_gnu:''ddir'''myfile'.exe"
 $       if mode .eqs. "install"
 $       then
 $           if f$search(dest1) .eqs. "" then copy 'source' 'dest1'
@@ -152,6 +161,29 @@ $       else
 $           if f$search(dest2) .nes. "" then set file/remove 'dest2';*
 $           if f$search(dest3) .nes. "" then set file/remove 'dest3';*
 $           if f$search(dest1) .nes. "" then delete 'dest1';*
+$       endif
+$       goto inst_file_loop
+$   endif
+$!
+$!  Need to stage any scripts
+$   if (f$locate(".bin]", tdir) .lt. tdir_len) .and. (ttype .eqs. ".")
+$   then
+$       source = "sys$disk:[.vms]''tname'''ttype'"
+$       ddir =  tdir - "gnv."
+$       dest = "new_gnu:''ddir'''tname'''ttype'"
+$       if mode .eqs. "install"
+$       then
+$           if f$search(source) .eqs. ""
+$           then
+$               source = "sys$disk:[]''tname'''ttype'"
+$           endif
+$           if f$search(source) .eqs. ""
+$           then
+$               source = "sys$disk:[.src]''tname'''ttype'"
+$           endif
+$           if f$search(dest) .eqs. "" then copy 'source' 'dest'
+$       else
+$           if f$search(dest) .nes. "" then delete 'dest';*
 $       endif
 $       goto inst_file_loop
 $   endif

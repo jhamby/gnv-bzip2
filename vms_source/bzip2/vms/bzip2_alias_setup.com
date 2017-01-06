@@ -44,11 +44,13 @@ $ list = usr_bin
 $ prefix = "[usr.bin]"
 $ gosub aliases_list
 $!
+$set ver
 $ call do_alias "bzegrep" "''prefix'" "bzgrep"
 $ call do_alias "bzfgrep" "''prefix'" "bzgrep"
 $!
-$ call do_alias "bzmore" "''prefix'" "bzless"
+$ call do_alias "bzless" "''prefix'" "bzmore"
 $ call do_alias "bzcmp" "''prefix'" "bzdiff"
+$set nover
 $!
 $ exit
 $!
@@ -82,7 +84,7 @@ $ if p3 .eqs. ""
 $ then
 $   file = "gnv$gnu:''p2'gnv$''p1'.EXE"
 $ else
-$   file = "gnv$gnu:''p2'''pe'."
+$   file = "gnv$gnu:''p2'''p3'."
 $ endif
 $ alias = "gnv$gnu:''p2'''p1'."
 $ if f$search(file) .nes. ""
@@ -91,10 +93,13 @@ $   if f$search(alias) .eqs. ""
 $   then
 $       set file/enter='alias' 'file'
 $   endif
-$   alias1 = alias + "exe"
-$   if f$search(alias1) .eqs. ""
+$   if p3 .eqs. ""
 $   then
-$       set file/enter='alias1' 'file'
+$       alias1 = alias + "exe"
+$       if f$search(alias1) .eqs. ""
+$       then
+$           set file/enter='alias1' 'file'
+$       endif
 $   endif
 $ endif
 $ exit
@@ -105,7 +110,7 @@ $ if p3 .eqs. ""
 $ then
 $   file = "gnv$gnu:''p2'gnv$''p1'.EXE"
 $ else
-$   file = "gnv$gnu:''p2'''pe'."
+$   file = "gnv$gnu:''p2'''p1'."
 $ endif
 $ file_fid = "No_file_fid"
 $ alias = "gnv$gnu:''p2'''p1'."
