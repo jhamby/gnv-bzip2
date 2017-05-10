@@ -136,6 +136,17 @@ still may be corner cases that fail.
 
 This kit is designed to be used with the GNV Bash 4.2.45 or later kit.
 
+Fixes and enhancements in the Bzip2 1.06 eco 1 kit.
+
+* The gnv$bzip2_startup.com procedure was not creating the logical
+names to for the shared images or a logical name for DCL based build
+procedures to find the bzlib.h header file.
+
+  GNV$LIBBZ2_64 is for the 64 bit libbz2 shared image.
+  GNV$LIBBZ2_32 is for the 32 bit libbz2 shared image.
+  GNV$BZIP2_INCLUDE is the location of bzlib.h header file.
+
+
 Fixes and enhancements in the Bzip2 1.06 kit.
 
 Merged most of the Steven Schweda ported features:

@@ -99,10 +99,15 @@ $          install ADD 'file'/OPEN/SHARE/HEADER
 $      else
 $          install REPLACE 'file'/OPEN/SHARE/HEADER
 $      endif
+$      define/system/exec gnv$'image' 'file'
 $   endif
 $   i = i + 1
 $   goto install_image_loop
 $install_image_loop_end:
+$!
+$! Need a logical for DCL based build programs to find the
+$! header files for building against the shared image.
+$ define/system/exec gnv$bzip2_include gnv$ngu:[usr.include]
 $!
 $!
 $all_exit:
